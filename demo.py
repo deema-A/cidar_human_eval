@@ -12,39 +12,12 @@ css = """
     direction: rtl !important;
 }
 """
-# Assuming 'data.json' is your JSON file
-cidar = 'output/cidar.json'
-chat = 'output/chat.json'
-alpagasus = 'output/alpagasus.json'
-
-# Open the JSON file and load its content into a Python object
-with open(cidar, mode='r', encoding='utf-8') as file:
-    cidar_data = json.load(file)
-    cidar_df = pd.DataFrame(cidar_data)
-
-with open(chat, mode='r', encoding='utf-8') as file:
-    chat_data = json.load(file)
-    chat_df = pd.DataFrame(chat_data)
-    
-with open(alpagasus, mode='r', encoding='utf-8') as file:
-    alpagasus_data = json.load(file)
-    alpagasus_df = pd.DataFrame(alpagasus_data)
-
-# Select and rename the columns in 'alpagasus_df'
-alpagasus_df = alpagasus_df[['Sentence', 'Response']].rename(columns={'Sentence': 'instruction', 'Response': 'alpagasus_output'})
-cidar_df.rename(columns={'model_output': 'cidar_output'}, inplace=True)
-chat_df.rename(columns={'model_output': 'chat_output'}, inplace=True)
-
-# Merge 'chat_df' and 'alpagasus_df' first
-merged_df = pd.merge(chat_df, alpagasus_df, on='instruction', how='inner')
-
-# Then merge the result with 'cidar_df'
-df = pd.merge(merged_df, cidar_df, on='instruction', how='inner')
+file_path = 'output/merged.json'
+df = pd.read_json(file_path, orient='records', lines=False)
 
 # that keeps track of how many times each question has been used
 question_count = {index: 0 for index in df.index}
 model_rankings = defaultdict(lambda: {'1st': 0, '2nd': 0, '3rd': 0})
-
 
 def get_rank_suffix(rank):
     if 11 <= rank <= 13:
@@ -52,7 +25,6 @@ def get_rank_suffix(rank):
     else:
         suffixes = {1: 'st', 2: 'nd', 3: 'rd'}
         return suffixes.get(rank % 10, 'th')
-
 
 def process_rankings(user_rankings):
     print("Processing Rankings:", user_rankings)  # Debugging print
@@ -68,7 +40,6 @@ def process_rankings(user_rankings):
         file.write('\n')  # Add a newline to separate entries
     print("Updated Model Rankings:", model_rankings)  # Debugging print
     return
-
 
 def get_questions_and_answers():
     available_questions = [index for index, count in question_count.items() if count < 3]
@@ -88,7 +59,6 @@ def get_questions_and_answers():
         questions_and_answers.append((question, answers_with_models))
 
     return questions_and_answers
-
 
 def rank_interface():
     questions = get_questions_and_answers()
