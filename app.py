@@ -104,7 +104,9 @@ def rank_interface():
         return "سجلنا ردك، ما قصرت =)"
 
     return gr.Interface(fn=rank_fluency, inputs=inputs, outputs=outputs, title="ترتيب فصاحة النماذج",
-                            description=".لديك مجموعة من الأسئلة، الرجاء ترتيب إجابات كل سؤال حسب جودة و فصاحة الإجابة", css=css)
+                            description=".لديك مجموعة من الأسئلة، الرجاء ترتيب إجابات كل سؤال حسب جودة و فصاحة الإجابة", css=css
+                            #, allow_flagging="manual"
+                            )
 
 iface = rank_interface()
 iface.launch()
