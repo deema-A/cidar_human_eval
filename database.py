@@ -1,20 +1,24 @@
 from pymongo import MongoClient
+from urllib.parse import quote_plus
+import os 
 
-uri = "mongodb+srv://cluster0.tzvxqk3.mongodb.net/?authSource=%24external&authMechanism=MONGODB-X509&retryWrites=true&w=majority"
-client = MongoClient(uri,
-                     tls=True,
-                     tlsCertificateKeyFile="X509-cert-2433626168795922546.pem")
+password = quote_plus(os.environ['pw'])
 
+uri = f"mongodb+srv://cidar:{password}@cluster0.yuhfxcj.mongodb.net/?retryWrites=true&w=majority"
+
+# Create a new client and connect to the server
+client = MongoClient(uri)
 db = client['testDB']
 collection = db['testCol']
-
 
 def save_response(response_data):
     """Saves a response to the MongoDB collection."""
 
     try:
         # Insert the response data into the collection
+        print("right before insertion")
         collection.insert_one(response_data)
+        print("right after insertion")
     except Exception as e:
         print(f"An error occurred: {e}")
         exit(0)
