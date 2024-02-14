@@ -1,8 +1,10 @@
+import os
+os.system("pip install pymongo")
+from collections import defaultdict
+from database import save_response
 import gradio as gr
 import pandas as pd
 import random
-from collections import defaultdict
-import json
 
 css = """
 .rtl{
@@ -12,12 +14,14 @@ css = """
     direction: rtl !important;
 }
 """
-file_path = 'output/merged.json'
+
+file_path = 'instructions/merged.json'
 df = pd.read_json(file_path, orient='records', lines=False)
 
 # that keeps track of how many times each question has been used
 question_count = {index: 0 for index in df.index}
 model_rankings = defaultdict(lambda: {'1st': 0, '2nd': 0, '3rd': 0})
+
 
 def get_rank_suffix(rank):
     if 11 <= rank <= 13:
@@ -26,20 +30,19 @@ def get_rank_suffix(rank):
         suffixes = {1: 'st', 2: 'nd', 3: 'rd'}
         return suffixes.get(rank % 10, 'th')
 
+
 def process_rankings(user_rankings):
     print("Processing Rankings:", user_rankings)  # Debugging print
     for answer_id, rank in user_rankings:
         model = answer_id.split('_')[0]  # Extracting the model name from the answer_id
         rank_suffix = get_rank_suffix(rank)
         model_rankings[model][f'{rank}{rank_suffix}'] += 1  # Using the correct suffix based on the rank
-
-    file_path = 'users_ranking.txt'
-    with open(file_path, 'a') as file:
         model_rankings_dict = dict(model_rankings)
-        json.dump(model_rankings_dict, file)
-        file.write('\n')  # Add a newline to separate entries
+
+    save_response(model_rankings_dict)
     print("Updated Model Rankings:", model_rankings)  # Debugging print
     return
+
 
 def get_questions_and_answers():
     available_questions = [index for index, count in question_count.items() if count < 3]
@@ -59,6 +62,7 @@ def get_questions_and_answers():
         questions_and_answers.append((question, answers_with_models))
 
     return questions_and_answers
+
 
 def rank_interface():
     questions = get_questions_and_answers()
@@ -104,9 +108,7 @@ def rank_interface():
         return "سجلنا ردك، ما قصرت =)"
 
     return gr.Interface(fn=rank_fluency, inputs=inputs, outputs=outputs, title="ترتيب فصاحة النماذج",
-                            description=".لديك مجموعة من الأسئلة، الرجاء ترتيب إجابات كل سؤال حسب جودة و فصاحة الإجابة", css=css
-                            #, allow_flagging="manual"
-                            )
+                            description=".لديك مجموعة من الأسئلة، الرجاء ترتيب إجابات كل سؤال حسب جودة و فصاحة الإجابة", css=css)
 
 iface = rank_interface()
 iface.launch()

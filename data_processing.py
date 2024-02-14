@@ -1,9 +1,9 @@
 import pandas as pd
 import json
 
-cidar = 'output/cidar.json'
-chat = 'output/chat.json'
-alpagasus = 'output/alpagasus.json'
+cidar = 'instructions/cidar.json'
+chat = 'instructions/chat.json'
+alpagasus = 'instructions/alpagasus.json'
 
 with open(cidar, mode='r', encoding='utf-8') as file:
     cidar_data = json.load(file)
@@ -23,4 +23,4 @@ cidar_df.rename(columns={'model_output': 'cidar_output'}, inplace=True)
 chat_df.rename(columns={'model_output': 'chat_output'}, inplace=True)
 merged_df = pd.concat([cidar_df, alpagasus_df.drop(columns=['instruction']), chat_df.drop(columns=['instruction'])], axis=1)
 
-merged_df.to_json('output/merged.json', orient='records', lines=False, force_ascii=False)
+merged_df.to_json('instructions/merged.json', orient='records', lines=False, force_ascii=False)
